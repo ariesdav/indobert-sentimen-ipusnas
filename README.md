@@ -24,7 +24,7 @@ Kalau berhasil, akan muncul `(venv)` di depan baris terminal.
 ```bash
 pip install -r requirements.txt
 ```
-Proses ini agak lama karena ada `torch` dan `transformers`. Cukup dilakukan sekali, atau kalau `requirements.txt` berubah.
+Proses ini lumayan lama karena ada `torch` dan `transformers`. Cukup dilakukan sekali, atau kalau `requirements.txt` berubah.
 
 5. Jalankan aplikasi
 ```bash
@@ -37,7 +37,7 @@ streamlit run app.py
 
 ## Menjalankan Lagi Setelahnya
 
-Gak perlu ulang buat venv atau install requirements lagi. Cukup:
+Tidak perlu ulang buat venv atau install requirements lagi. Cukup:
 ```bash
 cd E:\skripsi\code\TA_streamlit
 venv\Scripts\activate
