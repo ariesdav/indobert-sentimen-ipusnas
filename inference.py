@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 #Konfigurasi path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = "ariesdav/indobert-sentimen-ipusnas"
-LABEL_ENCODER_PATH = os.path.join(BASE_DIR, "model_final", "label_encoder.pkl")
+LABEL_ENCODER_PATH = os.path.join(BASE_DIR, "label_encoder.pkl")
 
 #cek gpu
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
