@@ -184,7 +184,7 @@ def highlight_sentimen(val):
     return colors.get(val, "")
 
 st.dataframe(
-    table_view.style.applymap(highlight_sentimen, subset=["Sentimen"]),
+    table_view.style.map(highlight_sentimen, subset=["Sentimen"]),
     use_container_width=True,
     hide_index=True
 )
