@@ -1,28 +1,53 @@
-CARA MENJALANKAN APLIKASI
-------------------------------------------------------------
-LANGKAH-LANGKAH
-------------------------------------------------------------
-1. Buka PowerShell / Terminal, lalu masuk ke folder project ini.
-   Contoh:
-   cd E:\skripsi\code\TA_streamlit
-2. (Jika BELUM pernah membuat virtual environment / venv)
-   Buat virtual environment baru:
-   python -m venv venv
-3. Aktifkan virtual environment:
-   venv\Scripts\activate
-   Jika berhasil, di depan baris terminal akan muncul tulisan (venv)
-4. Install semua library yang dibutuhkan (hanya perlu sekali, atau
-   setiap kali requirements.txt berubah):
-   pip install -r requirements.txt
-   Catatan: proses ini bisa memakan waktu cukup lama karena ada
-   library besar (torch, transformers) untuk model IndoBERT.
-5. Jalankan aplikasi:
-   streamlit run app.py
-6. Tunggu sebentar, nanti otomatis akan terbuka tab baru di browser
-   dengan alamat seperti: http://localhost:8501
-   Kalau tidak otomatis terbuka, copy-paste alamat tersebut ke browser.
-7. Untuk MENGHENTIKAN aplikasi:
-   Kembali ke jendela terminal, tekan CTRL + C
-   Untuk menjalankan lagi di lain waktu, cukup ulangi dari langkah 1,
-   3, dan 5 (tidak perlu ulang membuat venv & install requirements
-   lagi, kecuali venv dihapus atau requirements.txt berubah).
+# Sistem Analisis Sentimen Ulasan iPusnas (IndoBERT)
+
+Aplikasi untuk klasifikasi sentimen ulasan pengguna aplikasi iPusnas menggunakan model IndoBERT yang sudah di-fine-tune. Dibangun dengan Streamlit.
+
+## Cara Menjalankan
+
+1. Masuk ke folder project
+```bash
+cd E:\skripsi\code\TA_streamlit
+```
+
+2. Buat virtual environment (kalau belum pernah)
+```bash
+python -m venv venv
+```
+
+3. Aktifkan virtual environment
+```bash
+venv\Scripts\activate
+```
+Kalau berhasil, akan muncul `(venv)` di depan baris terminal.
+
+4. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+Proses ini agak lama karena ada `torch` dan `transformers`. Cukup dilakukan sekali, atau kalau `requirements.txt` berubah.
+
+5. Jalankan aplikasi
+```bash
+streamlit run app.py
+```
+
+6. Buka browser ke `http://localhost:8501` (biasanya kebuka otomatis)
+
+7. Untuk stop, tekan `CTRL + C` di terminal
+
+## Menjalankan Lagi Setelahnya
+
+Gak perlu ulang buat venv atau install requirements lagi. Cukup:
+```bash
+cd E:\skripsi\code\TA_streamlit
+venv\Scripts\activate
+streamlit run app.py
+```
+
+## Struktur Project
+
+- `app.py` — entry point aplikasi Streamlit
+- `inference.py` — load model dan fungsi prediksi
+- `preprocessing.py` — pipeline preprocessing teks
+- `pages/` — halaman-halaman aplikasi (upload, hasil klasifikasi, modeling, dll)
+- `label_encoder.pkl` — encoder label sentimen
