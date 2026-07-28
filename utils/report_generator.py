@@ -137,8 +137,8 @@ def _chart_wordcloud_before_after(df: pd.DataFrame, sample_size: int = 1000) -> 
 
     sample_df = df.sample(n=min(sample_size, len(df)), random_state=42) if len(df) > sample_size else df
     raw_text = " ".join(sample_df["content"].astype(str))
-    processed_text = " ".join(sample_df["final_text"].astype(str))
-
+    processed_text = " ".join(sample_df["final_text"].dropna().astype(str))
+    
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.6))
 
     if raw_text.strip():

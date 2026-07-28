@@ -44,7 +44,7 @@ def show_wordcloud_section(df: pd.DataFrame):
         return
 
     if has_raw:
-        raw_text = " ".join(df["content"].astype(str))
+        raw_text = " ".join(df["content"].dropna().astype(str))
         if not raw_text.strip():
             has_raw = False
 
