@@ -4,6 +4,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import streamlit.components.v1 as components
+
+# paksa scroll ke atas tiap kali halaman ini dibuka
+components.html(
+    """
+    <script>
+        window.parent.document.querySelector('section.main').scrollTo(0, 0);
+    </script>
+    """,
+    height=0
+)
 
 st.title("🧠 Modeling — Hasil Training IndoBERT")
 
