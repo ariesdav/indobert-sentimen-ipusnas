@@ -37,7 +37,7 @@ def show_wordcloud_section(df: pd.DataFrame):
     st.subheader("☁️ Wordcloud Sebelum vs Sesudah Preprocessing")
 
     has_raw = "content" in df.columns
-    processed_text = " ".join(df["final_text"].astype(str))
+    processed_text = " ".join(df["final_text"].dropna().astype(str))
 
     if not processed_text.strip():
         st.warning("Data teks kosong, wordcloud tidak bisa dibuat.")
