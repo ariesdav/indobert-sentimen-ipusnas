@@ -4,9 +4,10 @@ Aplikasi untuk klasifikasi sentimen ulasan pengguna aplikasi iPusnas menggunakan
 
 ## Cara Menjalankan
 
-1. Masuk ke folder project
+1. Clone repo ini, lalu masuk ke foldernya
 ```bash
-cd E:\skripsi\code\TA_streamlit
+git clone https://github.com/ariesdav/indobert-sentimen-ipusnas.git
+cd indobert-sentimen-ipusnas
 ```
 
 2. Buat virtual environment (kalau belum pernah)
@@ -39,7 +40,7 @@ streamlit run app.py
 
 Tidak perlu ulang buat venv atau install requirements lagi. Cukup:
 ```bash
-cd E:\skripsi\code\TA_streamlit
+cd indobert-sentimen-ipusnas
 venv\Scripts\activate
 streamlit run app.py
 ```
