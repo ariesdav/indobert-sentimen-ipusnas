@@ -10,7 +10,9 @@ import streamlit.components.v1 as components
 components.html(
     """
     <script>
-        window.parent.document.querySelector('section.main').scrollTo(0, 0);
+        setTimeout(function() {
+            window.parent.document.querySelector('section.main').scrollTo(0, 0);
+        }, 300);
     </script>
     """,
     height=0
