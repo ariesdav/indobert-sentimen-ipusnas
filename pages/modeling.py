@@ -10,9 +10,28 @@ import streamlit.components.v1 as components
 components.html(
     """
     <script>
-        setTimeout(function() {
-            window.parent.document.querySelector('section.main').scrollTo(0, 0);
-        }, 300);
+        function scrollAppToTop() {
+            try {
+                window.parent.scrollTo(0, 0);
+                var doc = window.parent.document;
+                var candidates = [
+                    doc.querySelector('section.main'),
+                    doc.querySelector('[data-testid="stAppViewContainer"]'),
+                    doc.querySelector('[data-testid="stMain"]'),
+                    doc.documentElement,
+                    doc.body,
+                ];
+                candidates.forEach(function(el) {
+                    if (el) { el.scrollTop = 0; }
+                });
+            } catch (e) {}
+        }
+        var tries = 0;
+        var interval = setInterval(function() {
+            scrollAppToTop();
+            tries++;
+            if (tries > 15) { clearInterval(interval); }
+        }, 150);
     </script>
     """,
     height=0
