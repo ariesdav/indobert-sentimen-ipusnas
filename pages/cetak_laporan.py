@@ -1,13 +1,7 @@
 #cetak_laporan.py
 import streamlit as st
 from datetime import datetime
-from utils.report_generator import (
-    generate_pdf_data_ulasan,
-    generate_pdf_preprocessing,
-    generate_pdf_klasifikasi,
-    generate_pdf_model,
-    generate_excel,
-)
+from utils.report_generator import generate_pdf, generate_excel
 
 st.title("📥 Ekspor Laporan")
 
@@ -25,125 +19,63 @@ count_positif = int((df["sentimen"] == "positive").sum())
 count_negatif = int((df["sentimen"] == "negative").sum())
 count_netral = int((df["sentimen"] == "neutral").sum())
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+col1, col2 = st.columns([1, 2])
 
-st.write(
-    "Unduh laporan analisis sentimen dalam 4 bagian terpisah, atau unduh "
-    "rekap lengkap dalam format Excel."
-)
-
-jumlah_baris = st.selectbox(
-    "Jumlah ulasan ditampilkan di tabel PDF (Laporan Data Ulasan & Hasil Klasifikasi)",
-    options=[25, 50, 100],
-    index=0,
-    help="Berlaku untuk laporan yang menampilkan tabel data ulasan, agar PDF tetap ringkas dan mudah dibaca."
-)
-
-st.divider()
-
-# Laporan Data Ulasan (Mentah)
-col1, col2 = st.columns([2, 1])
 with col1:
-    st.subheader("1️⃣ Laporan Data Ulasan (Mentah)")
-    st.caption("Ringkasan jumlah data & tabel ulasan mentah sebelum diproses.")
-with col2:
-    if st.button("Buat Laporan 1", use_container_width=True, key="btn_data_ulasan"):
-        with st.spinner("Menyusun laporan data ulasan..."):
-            buffer = generate_pdf_data_ulasan(df, max_rows=jumlah_baris)
-            st.session_state["buf_data_ulasan"] = buffer
-    if "buf_data_ulasan" in st.session_state:
-        st.download_button(
-            "📥 Unduh PDF",
-            data=st.session_state["buf_data_ulasan"],
-            file_name=f"laporan_data_ulasan_{timestamp}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="dl_data_ulasan",
-        )
-
-st.divider()
-
-#Laporan Preprocessing
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.subheader("2️⃣ Laporan Preprocessing")
-    st.caption("Wordcloud sebelum vs sesudah, dan contoh tahapan preprocessing.")
-with col2:
-    if st.button("Buat Laporan 2", use_container_width=True, key="btn_preprocessing"):
-        with st.spinner("Menyusun laporan preprocessing..."):
-            buffer = generate_pdf_preprocessing(df)
-            st.session_state["buf_preprocessing"] = buffer
-    if "buf_preprocessing" in st.session_state:
-        st.download_button(
-            "📥 Unduh PDF",
-            data=st.session_state["buf_preprocessing"],
-            file_name=f"laporan_preprocessing_{timestamp}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="dl_preprocessing",
-        )
-
-st.divider()
-
-# Laporan Hasil Klasifikasi
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.subheader("3️⃣ Laporan Hasil Klasifikasi Sentimen")
-    st.caption("Ringkasan statistik, proporsi sentimen, dan tabel hasil klasifikasi.")
-with col2:
-    if st.button("Buat Laporan 3", use_container_width=True, key="btn_klasifikasi"):
-        with st.spinner("Menyusun laporan klasifikasi..."):
-            buffer = generate_pdf_klasifikasi(df, max_rows=jumlah_baris)
-            st.session_state["buf_klasifikasi"] = buffer
-    if "buf_klasifikasi" in st.session_state:
-        st.download_button(
-            "📥 Unduh PDF",
-            data=st.session_state["buf_klasifikasi"],
-            file_name=f"laporan_klasifikasi_{timestamp}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="dl_klasifikasi",
-        )
-
-st.divider()
-
-#Laporan 4: Performa Model
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.subheader("4️⃣ Laporan Performa Model")
-    st.caption("Confusion matrix, precision/recall/F1-score dari hasil training.")
-with col2:
-    if st.button("Buat Laporan 4", use_container_width=True, key="btn_model"):
-        with st.spinner("Menyusun laporan performa model..."):
-            buffer = generate_pdf_model()
-            st.session_state["buf_model"] = buffer
-    if "buf_model" in st.session_state:
-        st.download_button(
-            "📥 Unduh PDF",
-            data=st.session_state["buf_model"],
-            file_name=f"laporan_performa_model_{timestamp}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="dl_model",
-        )
-
-st.divider()
-
-#Rekap lengkap Excel
-st.subheader("📊 Rekap Lengkap (Excel)")
-st.caption("Ringkasan statistik + seluruh data ulasan beserta confidence per baris.")
-if st.button("Buat Rekap Excel", key="btn_excel"):
-    with st.spinner("Menyusun rekap Excel..."):
-        buffer = generate_excel(df)
-        st.session_state["buf_excel"] = buffer
-if "buf_excel" in st.session_state:
-    st.download_button(
-        "📥 Unduh Excel",
-        data=st.session_state["buf_excel"],
-        file_name=f"laporan_sentimen_{timestamp}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key="dl_excel",
+    st.markdown(
+        """
+        <div style="text-align:center; padding: 40px; border: 2px dashed #ccc; border-radius: 10px;">
+            <p style="font-size: 48px; margin: 0;">📄</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
+
+with col2:
+    st.subheader("Siap Mengunduh Laporan")
+    st.write("Laporan berisi:")
+    st.markdown(
+        """
+        - Ringkasan Statistik (Total Sentimen, Total Ulasan)
+        - Tabel Data Ulasan
+        - Detail Confidence per Ulasan (khusus Excel)
+        """
+    )
+
+    format_pilihan = st.radio(
+        "Pilih Format",
+        options=["PDF Document (.pdf)", "Excel Spreadsheet (.xlsx)"],
+        index=0,
+    )
+
+    # batas baris cuma buat PDF, excel full data
+    jumlah_baris = 25
+    if "PDF" in format_pilihan:
+        jumlah_baris = st.selectbox(
+            "Jumlah ulasan ditampilkan di tabel PDF",
+            options=[25, 50, 100],
+            index=0,
+            help="Excel selalu berisi seluruh data, batas ini hanya berlaku untuk PDF agar tetap ringkas dan mudah dibaca."
+        )
+
+    if st.button("⬇️ Buat & Unduh Laporan", type="primary"):
+        with st.spinner("Menyusun laporan..."):
+            if "PDF" in format_pilihan:
+                buffer = generate_pdf(df, max_rows=jumlah_baris)
+                st.download_button(
+                    label="📥 Unduh Laporan PDF",
+                    data=buffer,
+                    file_name=f"laporan_sentimen_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                    mime="application/pdf",
+                )
+            else:
+                buffer = generate_excel(df)
+                st.download_button(
+                    label="📥 Unduh Laporan Excel",
+                    data=buffer,
+                    file_name=f"laporan_sentimen_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
 
 st.divider()
 
