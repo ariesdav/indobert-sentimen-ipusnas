@@ -3,6 +3,7 @@
 import os
 from io import BytesIO
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -303,7 +304,7 @@ def _build_letterhead(styles) -> list:
     elements.append(divider)
     elements.append(Spacer(1, 6))
 
-    elements.append(Paragraph(f"Dibuat pada: {format_tanggal_indonesia(datetime.now())}", date_style))
+    elements.append(Paragraph(f"Dibuat pada: {format_tanggal_indonesia(datetime.now(ZoneInfo('Asia/Jakarta')))}", date_style))
     elements.append(Spacer(1, 14))
 
     return elements

@@ -2,6 +2,7 @@
 import streamlit as st
 from datetime import datetime
 from utils.report_generator import generate_pdf, generate_excel
+from zoneinfo import ZoneInfo
 
 st.title("📥 Ekspor Laporan")
 
@@ -65,7 +66,7 @@ with col2:
                 st.download_button(
                     label="📥 Unduh Laporan PDF",
                     data=buffer,
-                    file_name=f"laporan_sentimen_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                    file_name=f"laporan_sentimen_{datetime.now(ZoneInfo('Asia/Jakarta')).strftime('%Y%m%d_%H%M')}.pdf",
                     mime="application/pdf",
                 )
             else:
