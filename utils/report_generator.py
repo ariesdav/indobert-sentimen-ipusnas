@@ -137,8 +137,8 @@ def _chart_wordcloud_before_after(df: pd.DataFrame, sample_size: int = 1000) -> 
 
     sample_df = df.sample(n=min(sample_size, len(df)), random_state=42) if len(df) > sample_size else df
     raw_text = " ".join(sample_df["content"].astype(str))
-    processed_text = " ".join(sample_df["final_text"].dropna().astype(str))
-    
+    processed_text = " ".join(sample_df["final_text"].astype(str))
+
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.6))
 
     if raw_text.strip():
@@ -261,10 +261,13 @@ def _chart_per_class_metrics() -> BytesIO:
     return buf
 
 
-def _build_letterhead(styles) -> list:
+def _build_letterhead(styles, judul_laporan: str = "LAPORAN ANALISIS SENTIMEN ULASAN APLIKASI") -> list:
     """
     Bangun blok kop surat: logo, judul laporan, judul skripsi/topik, garis pembatas,
     lalu tanggal cetak.
+
+    judul_laporan: judul spesifik tiap jenis laporan (data ulasan, preprocessing,
+    klasifikasi, atau model), ditampilkan di baris judul utama kop surat.
     """
     elements = []
 
@@ -287,13 +290,14 @@ def _build_letterhead(styles) -> list:
         elements.append(logo_img)
         elements.append(Spacer(1, 6))
 
-    elements.append(Paragraph("LAPORAN ANALISIS SENTIMEN ULASAN APLIKASI", title_style))
+    elements.append(Paragraph(judul_laporan, title_style))
     elements.append(Paragraph(
         "Analisis Sentimen terhadap Ulasan Aplikasi iPusnas di Google Play Store "
         "dengan Metode IndoBERT",
         subtitle_style
     ))
     elements.append(Spacer(1, 10))
+
 
     # garis pembatas, gaya kop surat
     divider = Table([[""]], colWidths=[17 * cm])
@@ -387,16 +391,8 @@ def _build_model_performance_section(styles, caption_style) -> list:
     return elements
 
 
-def generate_pdf(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
-    """
-    Generate laporan PDF berisi: ringkasan statistik, tahapan preprocessing,
-    proporsi sentimen, tabel data ulasan, dan performa model.
-    """
-    total = len(df)
-    count_positif = int((df["sentimen"] == "positive").sum())
-    count_negatif = int((df["sentimen"] == "negative").sum())
-    count_netral = int((df["sentimen"] == "neutral").sum())
-
+def _new_doc_and_styles():
+    """Bikin buffer, doc, dan styles dasar yang dipakai bareng oleh semua jenis laporan."""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=2 * cm, bottomMargin=2 * cm)
     styles = getSampleStyleSheet()
@@ -407,12 +403,99 @@ def generate_pdf(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
         "CaptionStyle", parent=styles["Normal"], fontSize=8,
         textColor=colors.HexColor("#555555"), leading=11,
     )
+    return buffer, doc, styles, cell_style, caption_style
+
+
+def generate_pdf_data_ulasan(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
+    """
+    Laporan 1: Data Ulasan (Mentah).
+    Berisi ringkasan jumlah data yang diupload dan tabel data ulasan mentah
+    (kolom 'content'), sebelum melalui preprocessing maupun klasifikasi.
+    """
+    total = len(df)
+    buffer, doc, styles, cell_style, caption_style = _new_doc_and_styles()
     elements = []
 
-    # Kop surat: logo, judul laporan, judul topik, garis pembatas, tanggal cetak
-    elements.extend(_build_letterhead(styles))
+    elements.extend(_build_letterhead(styles, "LAPORAN DATA ULASAN (MENTAH)"))
 
-    # Ringkasan statistik
+    elements.append(Paragraph("Ringkasan Data", styles["Heading2"]))
+    ringkasan_rows = [
+        ["Keterangan", "Nilai"],
+        ["Total Data Ulasan", str(total)],
+        ["Kolom Tersedia", ", ".join(df.columns.astype(str))],
+    ]
+    ringkasan_table = Table(ringkasan_rows, colWidths=[6 * cm, 8 * cm])
+    ringkasan_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2a78d6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    elements.append(ringkasan_table)
+    elements.append(Spacer(1, 20))
+
+    tampil_n = min(max_rows, total)
+    elements.append(Paragraph(
+        f"Tabel Data Ulasan Mentah (menampilkan {tampil_n} dari {total} data)", styles["Heading2"]
+    ))
+    detail_rows = [["No", "Ulasan"]]
+    for i, row in df.head(max_rows).iterrows():
+        ulasan_text = Paragraph(str(row["content"]), cell_style)
+        detail_rows.append([str(i + 1), ulasan_text])
+
+    detail_table = Table(detail_rows, colWidths=[1.5 * cm, 14 * cm], repeatRows=1)
+    detail_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2a78d6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ALIGN", (0, 0), (0, -1), "CENTER"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+    ]))
+    elements.append(detail_table)
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+def generate_pdf_preprocessing(df: pd.DataFrame) -> BytesIO:
+    """
+    Laporan 2: Preprocessing.
+    Berisi wordcloud sebelum vs sesudah preprocessing, dan contoh tahapan
+    preprocessing (case folding, cleaning, slang, tokenizing, stemming, dst).
+    """
+    buffer, doc, styles, cell_style, caption_style = _new_doc_and_styles()
+    elements = []
+
+    elements.extend(_build_letterhead(styles, "LAPORAN TAHAPAN PREPROCESSING"))
+    elements.extend(_build_preprocessing_section(df, styles, cell_style, caption_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+def generate_pdf_klasifikasi(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
+    """
+    Laporan 3: Hasil Klasifikasi Sentimen.
+    Berisi ringkasan statistik sentimen, proporsi sentimen (pie chart),
+    dan tabel data ulasan beserta label sentimennya.
+    """
+    total = len(df)
+    count_positif = int((df["sentimen"] == "positive").sum())
+    count_negatif = int((df["sentimen"] == "negative").sum())
+    count_netral = int((df["sentimen"] == "neutral").sum())
+
+    buffer, doc, styles, cell_style, caption_style = _new_doc_and_styles()
+    elements = []
+
+    elements.extend(_build_letterhead(styles, "LAPORAN HASIL KLASIFIKASI SENTIMEN"))
+
     elements.append(Paragraph("Ringkasan Statistik", styles["Heading2"]))
     summary_data = [
         ["Kategori", "Jumlah", "Persentase"],
@@ -433,10 +516,6 @@ def generate_pdf(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
     elements.append(summary_table)
     elements.append(Spacer(1, 20))
 
-    # Tahapan Preprocessing (wordcloud sebelum/sesudah + contoh progres 1 ulasan)
-    elements.extend(_build_preprocessing_section(df, styles, cell_style, caption_style))
-
-    # Proporsi Sentimen (pie chart, sama seperti tampilan di halaman beranda.py)
     elements.append(Paragraph("Proporsi Sentimen", styles["Heading2"]))
     pie_img = RLImage(_chart_proporsi_sentimen_pie(df), width=9 * cm, height=7.6 * cm)
     pie_img.hAlign = "CENTER"
@@ -444,7 +523,6 @@ def generate_pdf(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
     elements.append(Paragraph(_caption_proporsi_sentimen(df), caption_style))
     elements.append(Spacer(1, 20))
 
-    # Tabel data ulasan (dibatasi max_rows, teks di-wrap pakai Paragraph)
     tampil_n = min(max_rows, total)
     elements.append(Paragraph(
         f"Tabel Data Ulasan (menampilkan {tampil_n} dari {total} ulasan)", styles["Heading2"]
@@ -469,9 +547,24 @@ def generate_pdf(df: pd.DataFrame, max_rows: int = 25) -> BytesIO:
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
     ]))
     elements.append(detail_table)
-    elements.append(Spacer(1, 24))
 
-    # Performa Model (confusion matrix + precision/recall/F1, statis dari training)
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+def generate_pdf_model(df: pd.DataFrame = None) -> BytesIO:
+    """
+    Laporan 4: Performa Model.
+    Berisi info dataset/training, confusion matrix, dan precision/recall/F1
+    per kelas (data statis dari hasil evaluasi training, sama seperti modeling.py).
+    df tidak dipakai untuk isi laporan (semua data statis), tapi tetap diterima
+    biar konsisten signature-nya dengan fungsi generate_pdf_* lainnya.
+    """
+    buffer, doc, styles, cell_style, caption_style = _new_doc_and_styles()
+    elements = []
+
+    elements.extend(_build_letterhead(styles, "LAPORAN PERFORMA MODEL"))
     elements.extend(_build_model_performance_section(styles, caption_style))
 
     doc.build(elements)
